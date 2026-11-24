@@ -186,7 +186,7 @@ let me=null,recs=[],regMode=false,meal='f',days=30;
 const MEAL={f:'空腹／飯前',a:'飯後兩小時',r:'睡前／其他'};
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}};
 // ▼▼ 部署 Apps Script 後，把 /exec 網址貼在這裡 ▼▼
-const API_URL='https://script.google.com/macros/s/請貼上你的部署ID/exec';
+const API_URL='https://script.google.com/macros/s/AKfycbwzXFg2dJ669VXhOKs9QPvjP-ywcOA8ODsk1Det-kuz4TLljWai62hZPK31bAutQ6beIw/exec';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 async function run(fn,...args){
   if(API_URL.includes('請貼上'))throw new Error('網頁還沒設定 API 網址');
