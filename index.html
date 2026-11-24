@@ -239,7 +239,7 @@ input.txt{font:inherit;font-size:24px;width:100%;padding:12px 14px;border:2px so
       <p>刪除這支手機上的所有紀錄和設定。雲端硬碟裡的備份檔不會被刪。</p>
       <div class="row"><button class="small danger" id="bWipe" type="button">刪除這支手機上的資料</button></div>
     </div>
-    <p class="note">驗證碼只是螢幕鎖，用來避免別人拿起手機就看到紀錄，並不是加密。</p>
+    <p class="note">驗證碼只是螢幕鎖，用來避免別人拿起手機就看到紀錄，並不是加密。<a href="privacy.html" style="color:var(--gl)">隱私權說明</a></p>
   </div>
 
   <nav class="tabbar" role="tablist">
@@ -261,7 +261,7 @@ input.txt{font:inherit;font-size:24px;width:100%;padding:12px 14px;border:2px so
 <script>
 {
 // ▼▼ Google 雲端硬碟備份：填入 Google Cloud 的 OAuth 用戶端 ID 後才會開放 ▼▼
-const GOOGLE_CLIENT_ID='';
+const GOOGLE_CLIENT_ID='858507297293-p944fmlrfdkm5aon3o60l47lb9naupl5.apps.googleusercontent.com';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
