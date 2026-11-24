@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>血壓血糖手冊</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* VOICE: 溫和、清楚、像診所護理師說話；字大、步驟少
+   IDEA: 醫院發的紙本「血壓血糖紀錄手冊」，翻開就能寫
+   PICTURE: 大數字輸入卡＋趨勢折線圖本身就是畫面
+   COLOUR and TYPE: 白紙、深墨；血壓用磚紅、血糖用靛藍；Noto Sans TC 大字
+   LAYOUT: 單欄、頂部分頁，手機優先，按鈕至少 56px */
+:root{color-scheme:light dark;
+--bg:light-dark(#fbfaf7,#14161a);--card:light-dark(#ffffff,#1d2026);--ink:light-dark(#1b1d21,#eef0f3);
+--mute:light-dark(#5d626b,#a8aeb8);--line:light-dark(#e3e0d8,#30343c);
+--bp:light-dark(#b3261e,#ff8a7f);--bp2:light-dark(#e8a29c,#a2534c);--bg-bp:light-dark(#fbeceb,#33201f);
+--gl:light-dark(#1f4fa8,#8fb3ff);--bg-gl:light-dark(#e9eefb,#1c2540);
+--ok:light-dark(#1f7a4a,#6fd39d);--warn:light-dark(#9a5a00,#ffc46b);--bad:light-dark(#b3261e,#ff8a7f)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:19px/1.6 "Noto Sans TC",system-ui,sans-serif;overflow-x:clip}
+.wrap{max-width:760px;margin:0 auto;padding:clamp(18px,4vw,40px) max(4vw,14px) 60px}
+h1{font-size:clamp(32px,7vw,46px);line-height:1.1;margin:0 0 6px;font-weight:900;text-wrap:balance}
+h2{font-size:26px;margin:0 0 12px;line-height:1.2}
+.sub{color:var(--mute);margin:0 0 24px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:clamp(18px,4vw,28px);margin-bottom:18px;box-shadow:0 1px 0 var(--line)}
+label{display:block;font-weight:700;margin:14px 0 6px}
+input,select{font:inherit;font-size:24px;width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);min-height:60px}
+input:focus,select:focus,button:focus-visible{outline:3px solid var(--gl);outline-offset:2px}
+.pin{letter-spacing:.5em;text-align:center;font-size:32px;font-weight:700}
+button{font:inherit;font-weight:700;min-height:56px;padding:10px 22px;border-radius:14px;border:2px solid transparent;cursor:pointer;background:var(--ink);color:var(--bg)}
+button.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+button.big{width:100%;font-size:24px;min-height:64px;margin-top:18px}
+.bpbtn{background:var(--bp);color:#fff}.glbtn{background:var(--gl);color:#fff}
+:root[data-theme=dark] .bpbtn,:root[data-theme=dark] .glbtn{color:#111}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .bpbtn,:root:not([data-theme=light]) .glbtn{color:#111}}
+.link{background:none;color:var(--gl);padding:8px 0;min-height:44px;text-decoration:underline}
+.msg{min-height:1.6em;margin-top:12px;font-weight:700}
+.msg.err{color:var(--bad)}.msg.ok{color:var(--ok)}
+.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.unit{font-weight:400;color:var(--mute);font-size:15px}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.chips button{background:transparent;color:var(--ink);border-color:var(--line);font-size:19px}
+.chips button[aria-pressed=true]{background:var(--gl);color:#fff;border-color:var(--gl)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.who{font-size:24px;font-weight:900}
+.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:18px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:2}
+.tabs button{background:var(--card);color:var(--ink);border-color:var(--line);font-size:21px}
+.tabs button[aria-selected=true]{background:var(--ink);color:var(--bg)}
+.bpcard{border-top:8px solid var(--bp)}.glcard{border-top:8px solid var(--gl)}
+.result{margin-top:16px;padding:16px;border-radius:12px;font-size:22px;font-weight:700;display:none}
+.result.show{display:block}
+.lv-ok{background:light-dark(#e4f4ea,#173226);color:var(--ok)}.lv-warn{background:light-dark(#fdf0dc,#3a2c12);color:var(--warn)}.lv-bad{background:light-dark(#fbe3e1,#3d1d1b);color:var(--bad)}.lv-low{background:light-dark(#e9eefb,#1c2540);color:var(--gl)}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:6px}
+.tile{border-radius:14px;padding:14px 16px}
+.tile.b{background:var(--bg-bp)}.tile.g{background:var(--bg-gl)}
+.tile .k{font-size:15px;color:var(--mute)}
+.tile .v{font-size:clamp(28px,6vw,38px);font-weight:900;line-height:1.15;white-space:nowrap}
+.tile .d{font-size:16px;font-weight:500}
+.fig{position:relative;min-height:300px;margin:8px 0}.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:15px;color:var(--mute)}
+.sw{display:inline-block;width:22px;height:4px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.trend{font-size:18px;margin:10px 0 0;padding:12px 14px;border-left:5px solid var(--line);background:var(--bg)}
+.hist{list-style:none;margin:0;padding:0}
+.hist li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.dot{width:14px;height:14px;border-radius:50%}
+.hv{font-size:22px;font-weight:700;white-space:nowrap}.hm{font-size:15px;color:var(--mute)}
+.hist button{min-height:48px;padding:6px 14px;font-size:16px}
+.empty{color:var(--mute);text-align:center;padding:30px 10px}
+.note{font-size:15px;color:var(--mute);margin-top:10px}
+.hide{display:none!important}
+@media(max-width:600px){body{font-size:18px}.row3{grid-template-columns:repeat(2,minmax(0,1fr))}.row3 .pulse{grid-column:1/-1}.tiles{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:no-preference){.result.show{animation:pop .35s ease}@keyframes pop{from{transform:scale(.97);opacity:0}}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section id="vLogin">
+  <h1>血壓血糖手冊</h1>
+  <p class="sub">每天量一下，記下來。看得到變化，看診時也好跟醫師說。</p>
+  <div class="card">
+    <h2 id="loginTitle">登入</h2>
+    <form id="fLogin" autocomplete="off">
+      <label for="code">您的代碼</label>
+      <input id="code" maxlength="20" placeholder="例如 wang88" autocapitalize="off">
+      <div id="regName" class="hide">
+        <label for="nick">怎麼稱呼您</label>
+        <input id="nick" maxlength="12" placeholder="例如 王奶奶">
+      </div>
+      <label for="pin">四碼驗證碼</label>
+      <input id="pin" class="pin" type="password" inputmode="numeric" maxlength="4" pattern="\d{4}" placeholder="••••">
+      <div id="regPin2" class="hide">
+        <label for="pin2">再輸入一次驗證碼</label>
+        <input id="pin2" class="pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••">
+      </div>
+      <label style="font-weight:500;display:flex;gap:10px;align-items:center"><input id="remember" type="checkbox" style="width:26px;min-height:26px;height:26px"> 這台手機記住我</label>
+      <button class="big" id="bLogin" type="submit">登入</button>
+      <div class="msg" id="loginMsg" role="status"></div>
+    </form>
+    <button class="link" id="toggleReg" type="button">第一次使用？建立新代碼</button>
+  </div>
+  <p class="note">紀錄存在家人的 Google 試算表，換手機也看得到。驗證碼只是簡單的門鎖，請勿用銀行密碼。</p>
+</section>
+
+<section id="vMain" class="hide">
+  <div class="top">
+    <div><div class="who" id="who"></div><div class="hm" id="today"></div></div>
+    <button class="ghost" id="bOut" type="button">登出</button>
+  </div>
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="rec">記錄</button>
+    <button role="tab" aria-selected="false" data-tab="rep">趨勢報告</button>
+    <button role="tab" aria-selected="false" data-tab="his">歷史</button>
+  </div>
+
+  <div id="tRec">
+    <form class="card bpcard" id="fBp">
+      <h2 style="color:var(--bp)">量血壓</h2>
+      <div class="row3">
+        <div><label for="sys">收縮壓 <span class="unit">上面</span></label><input id="sys" inputmode="numeric" maxlength="3" placeholder="120"></div>
+        <div><label for="dia">舒張壓 <span class="unit">下面</span></label><input id="dia" inputmode="numeric" maxlength="3" placeholder="80"></div>
+        <div class="pulse"><label for="pul">脈搏 <span class="unit">可不填</span></label><input id="pul" inputmode="numeric" maxlength="3" placeholder="72"></div>
+      </div>
+      <label for="tBp">時間</label><input id="tBp" type="datetime-local">
+      <button class="big bpbtn" type="submit">儲存血壓</button>
+      <div class="result" id="rBp" role="status"></div>
+    </form>
+
+    <form class="card glcard" id="fGl">
+      <h2 style="color:var(--gl)">量血糖</h2>
+      <label for="glu">血糖值 <span class="unit">mg/dL</span></label>
+      <input id="glu" inputmode="numeric" maxlength="3" placeholder="100">
+      <label>什麼時候量的</label>
+      <div class="chips" id="meal">
+        <button type="button" data-m="f" aria-pressed="true">空腹／飯前</button>
+        <button type="button" data-m="a" aria-pressed="false">飯後兩小時</button>
+        <button type="button" data-m="r" aria-pressed="false">睡前／其他</button>
+      </div>
+      <label for="tGl">時間</label><input id="tGl" type="datetime-local">
+      <button class="big glbtn" type="submit">儲存血糖</button>
+      <div class="result" id="rGl" role="status"></div>
+    </form>
+    <p class="note">顏色判讀依一般成人參考值（血壓：台灣 2022 指引 130/80；血糖：空腹 100、飯後 140），僅供參考，請以醫師給您的目標為準。</p>
+  </div>
+
+  <div id="tRep" class="hide">
+    <div class="chips" id="range" style="margin-bottom:16px">
+      <button type="button" data-d="7" aria-pressed="false">近 7 天</button>
+      <button type="button" data-d="30" aria-pressed="true">近 30 天</button>
+      <button type="button" data-d="90" aria-pressed="false">近 90 天</button>
+    </div>
+    <div class="card bpcard">
+      <h2>血壓趨勢</h2>
+      <div class="tiles" id="tilesBp"></div>
+      <div class="fig" id="figBp"><svg id="svgBp" role="img" aria-label="血壓趨勢圖"></svg></div>
+      <div class="legend"><span><i class="sw" style="background:var(--bp)"></i>收縮壓</span><span><i class="sw" style="background:var(--bp2)"></i>舒張壓</span><span><i class="sw" style="border-top:3px dashed var(--mute);height:0"></i>趨勢線</span><span><i class="sw" style="background:var(--line)"></i>參考 130／80</span></div>
+      <p class="trend" id="trBp"></p>
+    </div>
+    <div class="card glcard">
+      <h2>血糖趨勢</h2>
+      <div class="tiles" id="tilesGl"></div>
+      <div class="fig" id="figGl"><svg id="svgGl" role="img" aria-label="血糖趨勢圖"></svg></div>
+      <div class="legend"><span><i class="sw" style="background:var(--gl)"></i>空腹／飯前</span><span><i class="sw" style="background:var(--warn)"></i>飯後</span><span><i class="sw" style="background:var(--mute)"></i>其他</span><span><i class="sw" style="border-top:3px dashed var(--mute);height:0"></i>趨勢線</span></div>
+      <p class="trend" id="trGl"></p>
+    </div>
+    <button class="big ghost" id="bCopy" type="button">複製報告文字（給醫師或家人）</button>
+    <div class="msg ok" id="copyMsg" role="status"></div>
+  </div>
+
+  <div id="tHis" class="hide">
+    <div class="card"><ul class="hist" id="hist"></ul></div>
+  </div>
+</section>
+
+</div>
+<textarea id="copyBox" style="position:fixed;left:-9999px;top:0" aria-hidden="true"></textarea>
+<script>
+{
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let me=null,recs=[],regMode=false,meal='f',days=30;
+const MEAL={f:'空腹／飯前',a:'飯後兩小時',r:'睡前／其他'};
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}};
+// ▼▼ 部署 Apps Script 後，把 /exec 網址貼在這裡 ▼▼
+const API_URL='https://script.google.com/macros/s/請貼上你的部署ID/exec';
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+async function run(fn,...args){
+  if(API_URL.includes('請貼上'))throw new Error('網頁還沒設定 API 網址');
+  let r;
+  try{r=await fetch(API_URL,{method:'POST',body:JSON.stringify({fn,args}),redirect:'follow'})}
+  catch(e){throw new Error('連不上網路，請確認網路後再試')}
+  let j;try{j=await r.json()}catch(e){throw new Error('伺服器回應有問題，請稍後再試')}
+  if(!j.ok)throw new Error(j.error||'發生錯誤');
+  return j.data;
+}
+const errText=e=>{const m=String(e&&e.message||e||'').replace(/^Error:\s*/,'').replace(/^Exception:\s*/,'');return m==='AUTH'?'登入已過期，請重新登入':(m||'連線有問題，請稍後再試')};
+const localISO=d=>{const z=new Date(d-d.getTimezoneOffset()*6e4);return z.toISOString().slice(0,16)};
+const fmt=t=>{const d=new Date(t);return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
+
+function bpLevel(s,d){
+  if(s<90||d<60)return['low','偏低','血壓偏低，若頭暈請坐下休息'];
+  if(s>=180||d>=110)return['bad','非常高','血壓很高，請休息後再量一次；若頭痛、胸悶請立即就醫'];
+  if(s>=140||d>=90)return['bad','高','血壓偏高，請持續記錄並告訴醫師'];
+  if(s>=130||d>=80)return['warn','稍高','比目標 130/80 稍高一點'];
+  return['ok','理想','血壓在理想範圍'];
+}
+function glLevel(v,m){
+  if(v<70)return['low','偏低','血糖偏低，請吃點含糖食物，並告訴家人'];
+  const hi=m==='f'?[100,126]:[140,200];
+  if(v>=hi[1])return['bad','高','血糖偏高，請持續記錄並告訴醫師'];
+  if(v>=hi[0])return['warn','稍高','比參考值稍高一點'];
+  return['ok','理想','血糖在理想範圍'];
+}
+function show(v){$('vLogin').classList.toggle('hide',v!=='login');$('vMain').classList.toggle('hide',v!=='main')}
+function msg(el,t,cls){el.textContent=t;el.className='msg '+(cls||'')}
+
+$('toggleReg').onclick=()=>{regMode=!regMode;$('regName').classList.toggle('hide',!regMode);$('regPin2').classList.toggle('hide',!regMode);
+  $('loginTitle').textContent=regMode?'建立新代碼':'登入';$('bLogin').textContent=regMode?'建立並登入':'登入';
+  $('toggleReg').textContent=regMode?'已經有代碼了？回到登入':'第一次使用？建立新代碼';msg($('loginMsg'),'')};
+for(const id of['pin','pin2'])$(id).addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,4)});
+
+$('fLogin').addEventListener('submit',async e=>{
+  e.preventDefault();const m=$('loginMsg');
+  const code=$('code').value.trim().toLowerCase(),pin=$('pin').value;
+  if(code.length<2){msg(m,'請輸入代碼（至少 2 個字）','err');return}
+  if(!/^\d{4}$/.test(pin)){msg(m,'驗證碼要 4 個數字','err');return}
+  if(regMode&&$('pin2').value!==pin){msg(m,'兩次驗證碼不一樣','err');return}
+  msg(m,'請稍候…');$('bLogin').disabled=true;
+  try{
+    const r=regMode?await run('register',code,$('nick').value,pin):await run('login',code,pin);
+    enter(r.token,r.name,$('remember').checked);
+  }catch(err){msg(m,errText(err),'err')}
+  finally{$('bLogin').disabled=false}
+});
+
+async function enter(token,name,remember){
+  me={token,name};
+  store.set('bpbook',remember?token:null);
+  $('who').textContent=name+'，您好';
+  $('today').textContent=new Date().toLocaleDateString('zh-TW',{month:'long',day:'numeric',weekday:'long'});
+  $('pin').value=$('pin2').value='';msg($('loginMsg'),'');
+  resetTimes();show('main');tab('rec');
+  $('hist').innerHTML='<li class="empty">讀取中…</li>';
+  try{recs=await run('getRecords',token);render()}catch(err){kick(err)}
+}
+function kick(err){const t=errText(err);if(t.startsWith('登入已過期')){store.set('bpbook',null);me=null;show('login');msg($('loginMsg'),t,'err')}return t}
+$('bOut').onclick=()=>{if(me)run('logout',me.token).catch(()=>{});me=null;recs=[];store.set('bpbook',null);show('login')};
+
+function resetTimes(){const n=localISO(new Date());$('tBp').value=n;$('tGl').value=n}
+const num=id=>{const v=parseInt($(id).value,10);return isNaN(v)?null:v};
+function showResult(el,lv,big,txt){el.className='result show lv-'+lv;el.textContent='';
+  const b=document.createElement('div');b.style.fontSize='30px';b.textContent=big;el.append(b,document.createTextNode(txt))}
+async function save(r,el,btn){
+  btn.disabled=true;el.className='result show';el.textContent='儲存中…';
+  try{recs=await run('addRecord',me.token,r);render();return true}
+  catch(err){el.className='result show lv-bad';el.textContent=kick(err);return false}
+  finally{btn.disabled=false}
+}
+$('fBp').addEventListener('submit',async e=>{
+  e.preventDefault();const s=num('sys'),d=num('dia'),p=num('pul'),el=$('rBp');
+  if(!s||!d||s<50||s>260||d<30||d>160||s<=d){el.className='result show lv-warn';el.textContent='請確認數字：上面（收縮壓）要比下面（舒張壓）大';return}
+  const t=new Date($('tBp').value||Date.now()).getTime();
+  const r={k:'bp',t,s,d};if(p&&p>=30&&p<=220)r.p=p;
+  if(await save(r,el,e.submitter||$('fBp').querySelector('button[type=submit]'))){const[lv,lab,txt]=bpLevel(s,d);showResult(el,lv,`${s}/${d}　${lab}`,`已儲存。${txt}`);$('sys').value=$('dia').value=$('pul').value='';resetTimes()}
+});
+$('meal').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;meal=b.dataset.m;for(const x of $('meal').children)x.setAttribute('aria-pressed',x===b)});
+$('fGl').addEventListener('submit',async e=>{
+  e.preventDefault();const v=num('glu'),el=$('rGl');
+  if(!v||v<20||v>600){el.className='result show lv-warn';el.textContent='請確認血糖數字（20–600）';return}
+  const t=new Date($('tGl').value||Date.now()).getTime(),m=meal;
+  if(await save({k:'gl',t,v,m},el,e.submitter||$('fGl').querySelector('button[type=submit]'))){const[lv,lab,txt]=glLevel(v,m);showResult(el,lv,`${v}　${lab}`,`已儲存（${MEAL[m]}）。${txt}`);$('glu').value='';resetTimes()}
+});
+
+function tab(n){for(const b of document.querySelectorAll('.tabs button'))b.setAttribute('aria-selected',b.dataset.tab===n);
+  $('tRec').classList.toggle('hide',n!=='rec');$('tRep').classList.toggle('hide',n!=='rep');$('tHis').classList.toggle('hide',n!=='his');if(n==='rep')drawAll()}
+document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)tab(b.dataset.tab)});
+$('range').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;days=+b.dataset.d;for(const x of $('range').children)x.setAttribute('aria-pressed',x===b);render()});
+
+const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+function fit(pts){if(pts.length<3)return null;const mx=avg(pts.map(p=>p[0])),my=avg(pts.map(p=>p[1]));
+  let a=0,b=0;for(const[x,y]of pts){a+=(x-mx)*(y-my);b+=(x-mx)**2}if(!b)return null;const k=a/b;return{k,c:my-k*mx}}
+function inRange(){const from=Date.now()-days*864e5;return recs.filter(r=>r.t>=from).sort((a,b)=>a.t-b.t)}
+function trendWord(f,unit,name){if(!f)return`${name}紀錄還不夠多（至少 3 筆）才能看出趨勢。`;
+  const w=f.k*7*864e5;if(Math.abs(w)<0.5)return`${name}這段期間大致持平。`;
+  return`${name}平均每週${w<0?'下降':'上升'}約 ${Math.abs(w).toFixed(1)} ${unit}${w<0?'，往好的方向走':'，請多留意'}。`}
+
+let cache={};
+function render(){if(!me)return;renderHist();renderReport()}
+function renderReport(){
+  const R=inRange(),bp=R.filter(r=>r.k==='bp'),gl=R.filter(r=>r.k==='gl');
+  const sA=avg(bp.map(r=>r.s)),dA=avg(bp.map(r=>r.d)),bpOk=bp.filter(r=>bpLevel(r.s,r.d)[0]==='ok').length;
+  $('tilesBp').innerHTML=bp.length?`<div class="tile b"><div class="k">平均血壓</div><div class="v">${Math.round(sA)}/${Math.round(dA)}</div><div class="d">共 ${bp.length} 次</div></div>
+   <div class="tile b"><div class="k">在理想範圍</div><div class="v">${Math.round(bpOk/bp.length*100)}%</div><div class="d">最高 ${Math.max(...bp.map(r=>r.s))}/${Math.max(...bp.map(r=>r.d))}</div></div>`:'';
+  const gf=gl.filter(r=>r.m==='f'),ga=gl.filter(r=>r.m==='a');
+  $('tilesGl').innerHTML=gl.length?`<div class="tile g"><div class="k">空腹平均</div><div class="v">${gf.length?Math.round(avg(gf.map(r=>r.v))):'—'}</div><div class="d">${gf.length} 次 · mg/dL</div></div>
+   <div class="tile g"><div class="k">飯後平均</div><div class="v">${ga.length?Math.round(avg(ga.map(r=>r.v))):'—'}</div><div class="d">${ga.length} 次 · mg/dL</div></div>`:'';
+  const fs=fit(bp.map(r=>[r.t,r.s])),fd=fit(bp.map(r=>[r.t,r.d])),ffg=fit(gf.map(r=>[r.t,r.v])),fag=fit(ga.map(r=>[r.t,r.v]));
+  $('trBp').textContent=bp.length?trendWord(fs,'mmHg','收縮壓'):'這段期間還沒有血壓紀錄。';
+  $('trGl').textContent=gl.length?(gf.length>=3?trendWord(ffg,'mg/dL','空腹血糖'):trendWord(fag,'mg/dL','飯後血糖')):'這段期間還沒有血糖紀錄。';
+  cache={bp,gl,fs,fd,ffg,fag,sA,dA,gf,ga,bpOk};
+  drawAll();
+}
+function drawAll(){if($('tRep').classList.contains('hide'))return;drawBp();drawGl()}
+function chart(svg,series,refs,yMin,yMax){
+  const W=svg.clientWidth,H=svg.clientHeight;if(!W||!H)return;
+  const narrow=W<520,L=narrow?36:46,Rm=12,T=14,B=narrow?28:34,from=Date.now()-days*864e5,to=Date.now();
+  const all=series.flatMap(s=>s.pts.map(p=>p[1]));
+  if(!all.length){svg.innerHTML=`<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="var(--mute)" font-size="17">還沒有資料，先去「記錄」量一次吧</text>`;return}
+  let lo=Math.min(yMin,...all),hi=Math.max(yMax,...all);lo=Math.floor((lo-5)/10)*10;hi=Math.ceil((hi+5)/10)*10;
+  const X=t=>L+(t-from)/(to-from)*(W-L-Rm),Y=v=>T+(hi-v)/(hi-lo)*(H-T-B);
+  let g='';const step=(hi-lo)>120?40:20;
+  for(let v=Math.ceil(lo/step)*step;v<=hi;v+=step)g+=`<line x1="${L}" x2="${W-Rm}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${Y(v)+5}" text-anchor="end" font-size="13" fill="var(--mute)">${v}</text>`;
+  const nt=narrow?3:5;for(let i=0;i<=nt;i++){const t=from+(to-from)*i/nt,d=new Date(t);g+=`<text x="${X(t)}" y="${H-8}" text-anchor="${i===0?'start':i===nt?'end':'middle'}" font-size="13" fill="var(--mute)">${d.getMonth()+1}/${d.getDate()}</text>`}
+  for(const r of refs)g+=`<line x1="${L}" x2="${W-Rm}" y1="${Y(r)}" y2="${Y(r)}" stroke="var(--mute)" stroke-width="1.5" stroke-dasharray="2 4" opacity=".7"/>`;
+  for(const s of series){if(!s.pts.length)continue;
+    if(s.line&&s.pts.length>1)g+=`<polyline fill="none" stroke="${s.c}" stroke-width="3" stroke-linejoin="round" points="${s.pts.map(p=>X(p[0])+','+Y(p[1])).join(' ')}"/>`;
+    g+=s.pts.map(p=>`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="${narrow?4:5}" fill="${s.c}" stroke="var(--card)" stroke-width="2"/>`).join('');
+    if(s.f){const t0=s.pts[0][0],t1=s.pts[s.pts.length-1][0];g+=`<line x1="${X(t0)}" y1="${Y(s.f.k*t0+s.f.c)}" x2="${X(t1)}" y2="${Y(s.f.k*t1+s.f.c)}" stroke="${s.c}" stroke-width="2.5" stroke-dasharray="8 6" opacity=".8"/>`}}
+  svg.innerHTML=g;
+}
+function drawBp(){const c=cache;if(!c.bp)return;chart($('svgBp'),[
+  {pts:c.bp.map(r=>[r.t,r.s]),c:'var(--bp)',line:true,f:c.fs},{pts:c.bp.map(r=>[r.t,r.d]),c:'var(--bp2)',line:true,f:c.fd}],[130,80],70,140)}
+function drawGl(){const c=cache;if(!c.gl)return;chart($('svgGl'),[
+  {pts:c.gf.map(r=>[r.t,r.v]),c:'var(--gl)',line:true,f:c.ffg},{pts:c.ga.map(r=>[r.t,r.v]),c:'var(--warn)',line:true,f:c.fag},
+  {pts:c.gl.filter(r=>r.m==='r').map(r=>[r.t,r.v]),c:'var(--mute)'}],[100,140],80,160)}
+const roBp=new ResizeObserver(drawBp);roBp.observe($('figBp'));const roGl=new ResizeObserver(drawGl);roGl.observe($('figGl'));
+
+function renderHist(){
+  if(!recs.length){$('hist').innerHTML='<li class="empty">還沒有紀錄。到「記錄」量第一次吧！</li>';return}
+  $('hist').innerHTML=recs.slice(0,200).map(r=>{
+    const bp=r.k==='bp',lv=bp?bpLevel(r.s,r.d):glLevel(r.v,r.m);
+    const val=bp?`${esc(r.s)}/${esc(r.d)}`:`${esc(r.v)}`,sub=bp?`血壓 mmHg${r.p?' · 脈搏 '+esc(r.p):''}`:`血糖 mg/dL · ${esc(MEAL[r.m]||'')}`;
+    return`<li><span class="dot" style="background:var(--${bp?'bp':'gl'})"></span><div><div class="hv">${val} <span class="lv-${lv[0]}" style="font-size:15px;padding:2px 8px;border-radius:8px">${lv[1]}</span></div><div class="hm">${fmt(r.t)} · ${sub}</div></div><button class="ghost" data-del="${esc(r.id)}">刪除</button></li>`}).join('');
+}
+$('hist').addEventListener('click',async e=>{const b=e.target.closest('[data-del]');if(!b)return;
+  if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='確定刪除？';b.style.color='var(--bad)';setTimeout(()=>{if(b.isConnected){b.dataset.sure='';b.textContent='刪除';b.style.color=''}},4000);return}
+  b.disabled=true;b.textContent='刪除中…';try{recs=await run('deleteRecord',me.token,b.dataset.del);render()}catch(err){b.disabled=false;b.textContent=kick(err).slice(0,6)}});
+
+$('bCopy').onclick=async()=>{const c=cache;if(!c.bp)return;
+  const L=[`${me.name} 近 ${days} 天血壓血糖報告（${new Date().toLocaleDateString('zh-TW')}）`];
+  if(c.bp.length)L.push(`血壓：量 ${c.bp.length} 次，平均 ${Math.round(c.sA)}/${Math.round(c.dA)} mmHg，理想範圍 ${Math.round(c.bpOk/c.bp.length*100)}%。${$('trBp').textContent}`);
+  if(c.gf.length)L.push(`空腹血糖：${c.gf.length} 次，平均 ${Math.round(avg(c.gf.map(r=>r.v)))} mg/dL`);
+  if(c.ga.length)L.push(`飯後血糖：${c.ga.length} 次，平均 ${Math.round(avg(c.ga.map(r=>r.v)))} mg/dL`);
+  if(c.gl.length)L.push($('trGl').textContent);
+  L.push('','明細：',...[...c.bp,...c.gl].sort((a,b)=>a.t-b.t).map(r=>r.k==='bp'?`${fmt(r.t)} 血壓 ${r.s}/${r.d}${r.p?' 脈搏 '+r.p:''}`:`${fmt(r.t)} 血糖 ${r.v}（${MEAL[r.m]||''}）`));
+  const text=L.join('\n');let ok=false;
+  try{await navigator.clipboard.writeText(text);ok=true}catch(e){}
+  if(!ok){try{const t=$('copyBox');t.value=text;t.select();ok=document.execCommand('copy')}catch(e){}}
+  $('copyMsg').textContent=ok?'已複製，可以貼到 LINE 給家人或醫師':'這台手機不能自動複製，請截圖分享'};
+
+(async()=>{
+  const saved=store.get('bpbook');
+  if(saved){try{const r=await run('whoAmI',saved);$('remember').checked=true;enter(saved,r.name,true)}catch(e){store.set('bpbook',null)}}
+})();
+}
+</script>
+</body>
+</html>
