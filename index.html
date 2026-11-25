@@ -120,6 +120,8 @@ input.txt{font:inherit;font-size:24px;width:100%;padding:12px 14px;border:2px so
 .sheet .acts{display:grid;gap:8px;margin-top:14px}.sheet .acts .btn{margin:0}
 .sheet .acts .alt{background:var(--key);color:var(--ink)}
 .sheet h3{font-size:24px;margin:0 0 6px}
+.codeRow{display:flex;gap:8px}.codeRow input{flex:1;text-transform:uppercase;letter-spacing:.3em;font-weight:700;text-align:center}
+.codeRow button{flex:none;min-height:60px;padding:0 16px;border-radius:14px;background:var(--key);font-size:17px;font-weight:700}
 </style>
 </head>
 <body>
@@ -133,8 +135,8 @@ input.txt{font:inherit;font-size:24px;width:100%;padding:12px 14px;border:2px so
   <label class="t" for="nick">怎麼稱呼您</label>
   <input class="txt" id="nick" maxlength="12" placeholder="例如 王奶奶">
   <label class="t" for="code">備份代碼</label>
-  <input class="txt" id="code" maxlength="20" placeholder="例如 mom" autocapitalize="off" autocomplete="off">
-  <p class="note" style="margin-top:6px">雲端備份用代碼區分，每個人用不同的代碼；換手機時輸入同一個代碼就能找回。稱呼之後可以隨時改。</p>
+  <div class="codeRow"><input class="txt" id="code" maxlength="4" placeholder="K7P3" autocapitalize="characters" autocomplete="off" spellcheck="false"><button type="button" id="bRand">隨機產生</button></div>
+  <p class="note" style="margin-top:6px">4 碼，英文和數字都要有。雲端備份用代碼區分，請記下來，換手機時輸入同一組代碼就能找回。稱呼之後可以隨時改。</p>
   <button class="btn" id="bStart" type="button">開始使用</button>
   <button class="btn hide" id="bRecover" type="button" style="background:var(--key);color:var(--ink);font-size:20px">換手機？從 Google 雲端找回紀錄</button>
   <div class="msg err" id="setupMsg" role="status"></div>
@@ -237,7 +239,8 @@ input.txt{font:inherit;font-size:24px;width:100%;padding:12px 14px;border:2px so
       <label class="t" for="nick2" style="margin-top:4px">稱呼</label>
       <div class="row" style="margin-top:0"><input class="txt" id="nick2" maxlength="12" style="flex:2 1 160px"><button class="small" id="bNick" type="button">儲存稱呼</button></div>
       <label class="t" for="code2">備份代碼</label>
-      <div class="row" style="margin-top:0"><input class="txt" id="code2" maxlength="20" autocapitalize="off" autocomplete="off" style="flex:2 1 160px"><button class="small" id="bCode" type="button">更改代碼</button></div>
+      <div class="codeRow"><input class="txt" id="code2" maxlength="4" autocapitalize="characters" autocomplete="off" spellcheck="false"><button type="button" id="bRand2">隨機</button></div>
+      <div class="row"><button class="small" id="bCode" type="button">更改代碼</button></div>
       <p style="margin-top:6px" id="codeHelp"></p>
       <p style="margin-top:12px" id="pinState"></p>
       <div class="row"><button class="small" id="bPinSet" type="button"></button><button class="small hide" id="bPinOff" type="button">取消四碼鎖</button></div>
@@ -276,7 +279,11 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const MEAL={f:'空腹／飯前',a:'飯後兩小時',r:'睡前／其他'};
 const fname=()=>'血壓血糖手冊備份-'+S.code+'.json';
 const normCode=c=>String(c||'').trim().toLowerCase();
-const codeOk=c=>/^[^\s\/\\'"<>:*?|]{1,20}$/.test(c);
+const codeOk=c=>/^(?=.*[a-z])(?=.*[0-9])[a-z0-9]{4}$/.test(c);
+const CODE_RULE='備份代碼要 4 碼，英文和數字都要有，例如 K7P3';
+const showCode=c=>String(c||'').toUpperCase();
+function randomCode(){const L='abcdefghjkmnpqrstuvwxyz',D='23456789',A=L+D,r=n=>{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n};
+  const p=[L[r(L.length)],D[r(D.length)],A[r(A.length)],A[r(A.length)]];for(let i=3;i>0;i--){const j=r(i+1);[p[i],p[j]]=[p[j],p[i]]}return p.join('')}
 let S={name:'',code:'',pin:null,recs:[],dead:[],drive:{on:false,fileId:null,last:0,dirty:false}};
 let page='bp',kind='bp',days=30,pin='',pinFirst='',lockMode='unlock',lockDone=null;
 const bp={s:'',d:'',p:''};let fld='s',gl='',meal='f';
@@ -351,7 +358,7 @@ document.addEventListener('keydown',e=>{
 function setupVals(){
   const n=$('nick').value.trim(),c=normCode($('code').value);$('setupMsg').textContent='';
   if(!n){$('setupMsg').textContent='請輸入稱呼';$('nick').focus();return null}
-  if(!codeOk(c)){$('setupMsg').textContent='請輸入備份代碼（1 到 20 個字，不能有空白或 / \\ \' " 等符號）';$('code').focus();return null}
+  if(!codeOk(c)){$('setupMsg').textContent=CODE_RULE;$('code').focus();return null}
   return{n:n.slice(0,12),c};
 }
 $('bRecover').onclick=()=>{
@@ -363,9 +370,13 @@ $('bRecover').onclick=()=>{
 $('bStart').onclick=async()=>{
   const v=setupVals();if(!v)return;
   S.name=v.n;S.code=v.c;await persist();
+  sheet({title:'請記下您的備份代碼',big:showCode(S.code),txt:'換手機或重新安裝時，輸入這組代碼就能從 Google 雲端找回紀錄。可以拍照或抄在本子上。',acts:[{t:'我記下來了',fn:askPin}]});
+};
+function askPin(){
   sheet({title:'要設定四碼鎖嗎？',txt:'設定後，每次打開都要輸入四碼，別人拿到手機也看不到紀錄。之後也可以在「設定」裡更改。',
     acts:[{t:'設定四碼鎖',fn:()=>startPin('new',enterMain)},{t:'先不用',alt:1,fn:enterMain}]});
-};
+}
+$('bRand').onclick=()=>{$('code').value=showCode(randomCode());$('setupMsg').textContent=''};
 $('nick').addEventListener('keydown',e=>{if(e.key==='Enter')$('code').focus()});
 $('code').addEventListener('keydown',e=>{if(e.key==='Enter')$('bStart').click()});
 
@@ -613,7 +624,7 @@ async function backup(quiet,mustExist){
   try{
     if(!codeOk(S.code))throw new Error('請先在「個人設定」設定備份代碼');
     const id=await findFile();let added=0;
-    if(!id&&mustExist)throw new Error(`這個 Google 帳號裡找不到代碼「${S.code}」的備份，請確認代碼和帳號`);
+    if(!id&&mustExist)throw new Error(`這個 Google 帳號裡找不到代碼 ${showCode(S.code)} 的備份，請確認代碼和帳號`);
     if(id){try{added=merge(await(await gfetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?alt=media`)).json())}catch(e){if(String(e.message).includes('授權'))throw e}}
     S.drive.fileId=await upload(id,dataOut());S.drive.on=true;S.drive.last=Date.now();S.drive.dirty=false;await persist();render();
     if(!quiet)dmsg(added?`已備份，並從雲端找回 ${added} 筆紀錄`:'已備份到您的 Google 雲端硬碟');
@@ -622,8 +633,8 @@ async function backup(quiet,mustExist){
   finally{syncing=false}
 }
 function renderSet(){
-  $('stLocal').textContent=`這支手機上有 ${S.recs.length} 筆紀錄`;$('nick2').value=S.name;$('code2').value=S.code||'';
-  $('codeHelp').textContent=S.code?`雲端備份檔名：${fname()}。同一個 Google 帳號可以用不同代碼存好幾個人的紀錄。`:'還沒設定備份代碼，設定後才能使用 Google 雲端備份。';
+  $('stLocal').textContent=`這支手機上有 ${S.recs.length} 筆紀錄`;$('nick2').value=S.name;$('code2').value=showCode(S.code);
+  $('codeHelp').textContent=codeOk(S.code)?`您的備份代碼是 ${showCode(S.code)}，換手機時要輸入。同一個 Google 帳號可以用不同代碼存好幾個人的紀錄。`:'還沒設定備份代碼（4 碼，英文和數字都要有），設定後才能使用 Google 雲端備份。';
   $('pinState').textContent=S.pin?'已設定四碼鎖：打開 App 時需要輸入。':'尚未設定四碼鎖：任何人拿起這支手機都能看到紀錄。';
   $('bPinSet').textContent=S.pin?'更改四碼鎖':'設定四碼鎖';$('bPinOff').classList.toggle('hide',!S.pin);
   const dot=$('stDriveDot'),btns=$('driveBtns');
@@ -633,21 +644,22 @@ function renderSet(){
   else{$('stDrive').textContent='未連接';dot.className='';btns.innerHTML='<button class="small" type="button" data-a="on" style="flex-basis:100%">連接我的 Google 雲端硬碟</button>'}
 }
 $('driveBtns').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
-  if(a==='on'){dmsg('');if(!codeOk(S.code)){dmsg('請先在下方「個人設定」設定備份代碼');$('code2').focus();return}withToken(()=>backup(false),'select_account')}
+  if(a==='on'){dmsg('');if(!codeOk(S.code)){dmsg('請先在下方「個人設定」設定 4 碼備份代碼');$('code2').focus();return}withToken(()=>backup(false),'select_account')}
   else if(a==='now')withToken(()=>backup(false),'');
   else if(a==='off')sheet({title:'中斷雲端連接？',txt:'之後的紀錄只會存在這支手機。雲端硬碟裡已經備份的檔案不會被刪除。',acts:[{t:'中斷連接',fn:async()=>{
     try{if(tok&&window.google)google.accounts.oauth2.revoke(tok,()=>{})}catch(err){}tok=null;S.drive={on:false,fileId:null,last:0,dirty:false};await persist();render();dmsg('已中斷連接')}},{t:'取消',alt:1}]});
 });
 
 /* ---------- 個人設定 ---------- */
+$('bRand2').onclick=()=>{$('code2').value=showCode(randomCode())};
 $('bCode').onclick=()=>{
   const c=normCode($('code2').value);
-  if(!codeOk(c)){sheet({lv:'warn',lab:'代碼不行',txt:'備份代碼要 1 到 20 個字，不能有空白或 / \\ \' " 等符號。'});return}
+  if(!codeOk(c)){sheet({lv:'warn',lab:'代碼格式不對',txt:CODE_RULE});return}
   if(c===S.code)return;
   const old=S.code;
-  sheet({title:'更改備份代碼？',txt:`之後雲端備份會存到「血壓血糖手冊備份-${c}.json」。`+(old?`舊代碼「${old}」的備份檔還留在雲端，不會被刪除。`:'')+(S.drive.on?'如果新代碼已經有備份，會和這支手機的紀錄合併。':''),
+  sheet({title:'更改備份代碼？',big:showCode(c),txt:'請記下新的代碼。之後雲端備份會改用這組代碼。'+(codeOk(old)?`舊代碼 ${showCode(old)} 的備份檔還留在雲端，不會被刪除。`:'')+(S.drive.on?'如果新代碼已經有備份，會和這支手機的紀錄合併。':''),
     acts:[{t:'更改',fn:async()=>{S.code=c;S.drive.fileId=null;S.drive.dirty=true;
-      if(S.drive.on)withToken(()=>backup(false),'');await persist();render();sheet({lab:'已更改',lv:'ok',txt:`備份代碼改為「${c}」。`})}},{t:'取消',alt:1}]});
+      if(S.drive.on)withToken(()=>backup(false),'');await persist();render();sheet({lab:'已更改',lv:'ok',txt:`備份代碼改為 ${showCode(c)}。`})}},{t:'取消',alt:1}]});
 };
 $('bNick').onclick=async()=>{const n=$('nick2').value.trim();if(!n)return;S.name=n.slice(0,12);await persist();$('who').textContent=S.name+'，您好';sheet({lab:'已儲存',lv:'ok',txt:'稱呼已更新。'})};
 $('bPinSet').onclick=()=>{
