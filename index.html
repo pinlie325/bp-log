@@ -78,6 +78,12 @@ input.txt{font:inherit;font-size:24px;width:100%;padding:12px 14px;border:2px so
 .chips button{min-height:52px;border-radius:14px;background:var(--card);border:2px solid var(--line);font-size:17px;font-weight:700;line-height:1.2}
 .chips button[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:var(--on)}
 /* 底部分頁 */
+#bSet{flex:none;white-space:nowrap}.top>div{min-width:0}
+.tabbar.view{grid-template-columns:repeat(2,minmax(0,1fr))}.tabbar.view [data-p=bp],.tabbar.view [data-p=gl]{display:none}
+.whoBtn{background:none;padding:4px 0;text-align:left;min-height:44px;display:flex;align-items:center;gap:6px}.whoBtn .who{font-size:22px}.whoBtn .car{font-size:14px;color:var(--mute);border:1.5px solid var(--line);border-radius:999px;padding:1px 10px;font-weight:700}
+.cloud{background:none;padding:0;text-align:left;min-height:28px}
+.viewTag{display:inline-block;font-size:13px;font-weight:700;padding:1px 8px;border-radius:999px;background:light-dark(#e9eefb,#1c2540);color:var(--gl);vertical-align:middle;margin-left:6px}
+.chk{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:12px 14px;border-radius:14px;background:var(--key);font-size:17px;cursor:pointer}.chk input{width:24px;height:24px;flex:none;margin-top:2px}
 .tabbar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;z-index:5}
 .tabbar button{background:none;min-height:60px;border-radius:12px;font-size:17px;font-weight:700;color:var(--mute);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
 .tabbar svg{width:26px;height:26px}
@@ -137,8 +143,9 @@ input.txt{font:inherit;font-size:24px;width:100%;padding:12px 14px;border:2px so
 <!-- 第一次使用 -->
 <section id="vSetup" class="hide">
   <img src="icon-180.png" alt="" width="72" height="72" style="border-radius:18px;margin-top:24px;display:block">
-  <h1 style="margin-top:12px">血壓血糖手冊</h1>
-  <p class="sub">每天量一下，記下來，看診時好跟醫師說。紀錄只存在這支手機裡。</p>
+  <h1 style="margin-top:12px" id="setupTitle">血壓血糖手冊</h1>
+  <p class="sub" id="setupSub">每天量一下，記下來，看診時好跟醫師說。紀錄只存在這支手機裡。</p>
+  <label class="chk hide" id="viewWrap"><input type="checkbox" id="viewOnly"><span><b>只看家人的紀錄</b><br><span style="font-size:15px;color:var(--mute)">從 Google 雲端讀取家人（例如媽媽）的紀錄，只能看趨勢和歷史，不能新增或修改。需要家人的備份代碼，並連到她備份用的 Google 帳號。</span></span></label>
   <label class="t" for="nick">怎麼稱呼您</label>
   <input class="txt" id="nick" maxlength="12" placeholder="例如 王奶奶">
   <label class="t" for="code">備份代碼</label>
@@ -146,6 +153,7 @@ input.txt{font:inherit;font-size:24px;width:100%;padding:12px 14px;border:2px so
   <p class="note" style="margin-top:6px">4 碼，英文和數字都要有。雲端備份用代碼區分，請記下來，換手機時輸入同一組代碼就能找回。稱呼之後可以隨時改。</p>
   <button class="btn" id="bStart" type="button">開始使用</button>
   <button class="btn hide" id="bRecover" type="button" style="background:var(--key);color:var(--ink);font-size:20px">換手機？從 Google 雲端找回紀錄</button>
+  <button class="btn hide" id="bAddCancel" type="button" style="background:none;color:var(--gl);font-size:18px;text-decoration:underline">取消，回到原本的使用者</button>
   <div class="msg err" id="setupMsg" role="status"></div>
   <div class="warnbox hide" id="setupHome">用 iPhone 嗎？建議<b>先加到主畫面</b>，再從主畫面圖示打開開始記錄，紀錄才不會分散在兩個地方。<button class="link" id="bSetupHow" type="button" style="font-size:15px;min-height:36px">看教學</button>
     <div id="setupHow" class="hide"><div class="how">
@@ -169,7 +177,7 @@ input.txt{font:inherit;font-size:24px;width:100%;padding:12px 14px;border:2px so
           </ol>
         </div>
       </div></div></div>
-  <p class="note">已經有備份檔？<label class="link" for="fRestore0" style="cursor:pointer">從備份檔還原</label>
+  <p class="note" id="restoreNote">已經有備份檔？<label class="link" for="fRestore0" style="cursor:pointer">從備份檔還原</label>
   <input type="file" id="fRestore0" accept=".json,application/json" class="hide"></p>
 </section>
 
@@ -188,7 +196,7 @@ input.txt{font:inherit;font-size:24px;width:100%;padding:12px 14px;border:2px so
 
 <!-- 主畫面 -->
 <section id="vMain" class="hide">
-  <div class="top"><div><div class="who" id="who"></div><div class="cloud" id="cloudLine"></div></div><button class="small" id="bSet" type="button">設定</button></div>
+  <div class="top"><div><button class="whoBtn" id="bWho" type="button" aria-label="切換使用者"><span class="who" id="who"></span><span class="car">切換 ▾</span></button><button class="cloud" id="cloudLine" type="button"></button></div><button class="small" id="bSet" type="button">設定</button></div>
 
   <div id="pBp">
     <h2>量血壓</h2>
@@ -244,6 +252,11 @@ input.txt{font:inherit;font-size:24px;width:100%;padding:12px 14px;border:2px so
       <h3>資料存在哪裡</h3>
       <p class="status"><i class="ok"></i><span id="stLocal"></span></p>
       <p>紀錄只存在這支手機的瀏覽器裡，不會上傳到任何人的伺服器。</p>
+    </div>
+    <div class="card" id="cardUsers">
+      <h3>使用者</h3>
+      <p id="usersInfo"></p>
+      <div class="row"><button class="small" id="bUsers" type="button">切換使用者</button><button class="small" id="bAddUser" type="button">新增使用者</button></div>
     </div>
     <div class="card" id="cardTheme">
       <h3>畫面顏色</h3>
@@ -318,7 +331,7 @@ input.txt{font:inherit;font-size:24px;width:100%;padding:12px 14px;border:2px so
     </div>
     <div class="card">
       <h3 class="danger">刪除資料</h3>
-      <p>刪除這支手機上的所有紀錄和設定。雲端硬碟裡的備份檔不會被刪。</p>
+      <p id="wipeInfo">刪除這支手機上的所有紀錄和設定。雲端硬碟裡的備份檔不會被刪。</p>
       <div class="row"><button class="small danger" id="bWipe" type="button">刪除這支手機上的資料</button></div>
     </div>
     <p class="note">驗證碼只是螢幕鎖，用來避免別人拿起手機就看到紀錄，並不是加密。<a href="privacy.html" style="color:var(--gl)">隱私權說明</a></p>
@@ -355,7 +368,11 @@ const CODE_RULE='備份代碼要 4 碼，英文和數字都要有，例如 K7P3'
 const showCode=c=>String(c||'').toUpperCase();
 function randomCode(){const L='abcdefghjkmnpqrstuvwxyz',D='23456789',A=L+D,r=n=>{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n};
   const p=[L[r(L.length)],D[r(D.length)],A[r(A.length)],A[r(A.length)]];for(let i=3;i>0;i--){const j=r(i+1);[p[i],p[j]]=[p[j],p[i]]}return p.join('')}
-let S={name:'',code:'',pin:null,recs:[],dead:[],drive:{on:false,fileId:null,last:0,dirty:false}};
+const blankDrive=()=>({on:false,fileId:null,last:0,dirty:false});
+function newProfile(name,code,view){return{id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,code,view:!!view,recs:[],dead:[],drive:blankDrive()}}
+let G={v:2,pin:null,cur:null,profiles:[]};   // 這支手機上的所有使用者
+let S=newProfile('','',false);               // 目前使用者
+let addMode=false;
 let page='bp',kind='bp',days=30,pin='',pinFirst='',lockMode='unlock',lockDone=null;
 const bp={s:'',d:'',p:''};let fld='s',gl='',meal='f';
 
@@ -366,7 +383,7 @@ async function loadState(){
   try{return JSON.parse(localStorage.getItem('bpbook-state'))}catch(e){return null}
 }
 async function persist(){
-  const v=JSON.parse(JSON.stringify(S));
+  const v=JSON.parse(JSON.stringify(G));
   try{const db=await idb();await new Promise((res,rej)=>{const t=db.transaction('kv','readwrite');t.objectStore('kv').put(v,'state');t.oncomplete=res;t.onerror=()=>rej(t.error)});return}catch(e){}
   try{localStorage.setItem('bpbook-state',JSON.stringify(v))}catch(e){sheet({lv:'bad',lab:'無法儲存',txt:'這支手機的瀏覽器不允許存資料，請改用 Chrome 或 Safari，並把網頁加入主畫面。'})}
 }
@@ -432,22 +449,45 @@ function setupVals(){
   if(!codeOk(c)){$('setupMsg').textContent=CODE_RULE;$('code').focus();return null}
   return{n:n.slice(0,12),c};
 }
+function dupCode(c){return G.profiles.some(p=>p.code===c)}
 $('bRecover').onclick=()=>{
-  const v=setupVals();if(!v)return;S.name=v.n;S.code=v.c;
-  withToken(async()=>{const r=await backup(false,true);
-    if(r&&r.ok){enterMain();sheet({lab:'找回完成',lv:'ok',txt:`從雲端找回 ${S.recs.length} 筆紀錄，之後會自動備份。`})}
-    else{S.drive={on:false,fileId:null,last:0,dirty:false};$('setupMsg').textContent=r?r.err:'連接失敗，請再試一次'}},'select_account');
+  const v=setupVals();if(!v)return;
+  if(dupCode(v.c)){$('setupMsg').textContent=`這支手機已經有代碼 ${showCode(v.c)} 的使用者了`;return}
+  const view=addMode&&$('viewOnly').checked,prev=S,P=newProfile(v.n,v.c,view);S=P;
+  withToken(async()=>{const r=view?await pull(true):await backup(false,true);
+    if(r&&r.ok){if(!G.profiles.includes(P))G.profiles.push(P);G.cur=P.id;await persist();const first=!addMode;addMode=false;enterMain();
+      sheet({lab:view?'已加入家人':'找回完成',lv:'ok',txt:view?`讀到 ${S.recs.length} 筆紀錄。之後切換到「${S.name}」時會自動更新，也可以點上方的雲端那行手動更新。`:`從雲端找回 ${S.recs.length} 筆紀錄，之後會自動備份。`,acts:[{t:'好',fn:first?askPin:null}]})}
+    else{S=prev;$('setupMsg').textContent=r?r.err:'連接失敗，請再試一次'}},'select_account');
 };
 $('bStart').onclick=async()=>{
   const v=setupVals();if(!v)return;
-  S.name=v.n;S.code=v.c;await persist();
-  sheet({title:'請記下您的備份代碼',big:showCode(S.code),txt:'換手機或重新安裝時，輸入這組代碼就能從 Google 雲端找回紀錄。可以拍照或抄在本子上。',acts:[{t:'我記下來了',fn:askPin}]});
+  if(dupCode(v.c)){$('setupMsg').textContent=`這支手機已經有代碼 ${showCode(v.c)} 的使用者了`;return}
+  const first=!addMode,P=newProfile(v.n,v.c,false);G.profiles.push(P);G.cur=P.id;S=P;addMode=false;await persist();
+  if(!first)enterMain();
+  sheet({title:'請記下備份代碼',big:showCode(S.code),txt:'換手機或重新安裝時，輸入這組代碼就能從 Google 雲端找回紀錄。可以拍照或抄在本子上。',acts:[{t:'我記下來了',fn:first?askPin:null}]});
 };
 function askPin(){
   sheet({title:'要設定四碼鎖嗎？',txt:'設定後，每次打開都要輸入四碼，別人拿到手機也看不到紀錄。之後也可以在「設定」裡更改。',
     acts:[{t:'設定四碼鎖',fn:()=>startPin('new',enterMain)},{t:'先不用',alt:1,fn:enterMain}]});
 }
 $('bRand').onclick=()=>{$('code').value=showCode(randomCode());$('setupMsg').textContent=''};
+function openSetup(add){
+  addMode=add;$('setupMsg').textContent='';$('nick').value='';$('code').value='';$('viewOnly').checked=false;
+  $('setupTitle').textContent=add?'新增使用者':'血壓血糖手冊';
+  $('setupSub').textContent=add?'家裡每個人可以各自一個使用者，紀錄完全分開。':'每天量一下，記下來，看診時好跟醫師說。紀錄只存在這支手機裡。';
+  $('viewWrap').classList.toggle('hide',!add||!GOOGLE_CLIENT_ID);$('bAddCancel').classList.toggle('hide',!add);
+  $('restoreNote').classList.toggle('hide',add);$('setupHome').classList.toggle('hide',add||!(isIOS&&!standalone()));
+  setupMode();show('vSetup');scrollTo(0,0);
+}
+function setupMode(){
+  const view=addMode&&$('viewOnly').checked;
+  $('bStart').classList.toggle('hide',view);$('bRand').classList.toggle('hide',view);
+  $('bRecover').textContent=view?'連接 Google，讀取家人的紀錄':addMode?'從 Google 雲端找回這個人的紀錄':'換手機？從 Google 雲端找回紀錄';
+  $('bRecover').style.cssText=view?'':'background:var(--key);color:var(--ink);font-size:20px';
+  $('nick').placeholder=view?'例如 媽媽':'例如 王奶奶';$('code').placeholder=view?'家人的代碼':'K7P3';
+}
+$('viewOnly').onchange=setupMode;
+$('bAddCancel').onclick=()=>{addMode=false;S=G.profiles.find(p=>p.id===G.cur)||G.profiles[0];enterMain()};
 $('nick').addEventListener('keydown',e=>{if(e.key==='Enter')$('code').focus()});
 $('code').addEventListener('keydown',e=>{if(e.key==='Enter')$('bStart').click()});
 
@@ -467,13 +507,13 @@ async function pinKey(k){
   drawDots();if(pin.length<4)return;
   const p=pin;
   if(lockMode==='unlock'){
-    if(await pinHash(p)===S.pin){pin='';lockDone&&lockDone()}
+    if(await pinHash(p)===G.pin){pin='';lockDone&&lockDone()}
     else{$('lockMsg').textContent='驗證碼不對，請再試一次';shake();pin='';setTimeout(drawDots,300)}
     return;
   }
   if(!pinFirst){pinFirst=p;pin='';$('pinPrompt').textContent='請再按一次，確認驗證碼';setTimeout(drawDots,150);return}
   if(p!==pinFirst){$('lockMsg').textContent='兩次不一樣，請重新設定';shake();pin='';pinFirst='';$('pinPrompt').textContent='請設定新的四碼驗證碼';setTimeout(drawDots,300);return}
-  S.pin=await pinHash(p);pin='';await persist();lockDone&&lockDone();
+  G.pin=await pinHash(p);pin='';await persist();lockDone&&lockDone();
   sheet({lab:'已設定四碼鎖',lv:'ok',txt:'請記住這四碼。下次打開時需要輸入。'});
 }
 $('bForgot').onclick=()=>{
@@ -485,16 +525,31 @@ $('bForgot').onclick=()=>{
 };
 function googleUnlock(){
   withToken(async()=>{try{const id=await findFile();
-    if(id&&id===S.drive.fileId){S.pin=null;await persist();enterMain();sheet({lab:'已解鎖',lv:'ok',txt:'四碼鎖已取消，可以到「設定」重新設定。'})}
+    if(id&&id===S.drive.fileId){G.pin=null;await persist();enterMain();sheet({lab:'已解鎖',lv:'ok',txt:'四碼鎖已取消，可以到「設定」重新設定。'})}
     else sheet({lv:'warn',lab:'無法解鎖',txt:'這個 Google 帳號不是當初備份用的帳號。'})}catch(e){sheet({lv:'bad',lab:'無法解鎖',txt:e.message})}},'select_account');
 }
 
 /* ---------- 主畫面 ---------- */
 function enterMain(){
-  $('who').textContent=S.name+'，您好';$('vMain').dataset.ready='1';
-  show('vMain');resetTimes();go(page==='set'?'set':'bp');render();
+  $('who').textContent=S.name;$('vMain').dataset.ready='1';
+  if(S.view)$('who').insertAdjacentHTML('beforeend','<span class="viewTag">只看</span>');
+  document.querySelector('.tabbar').classList.toggle('view',S.view);
+  show('vMain');resetTimes();go(S.view?'trend':(page==='set'?'set':'bp'));render();
 }
-function go(p){page=p;
+function switchTo(id){
+  const P=G.profiles.find(p=>p.id===id);if(!P||P===S)return;
+  S=P;G.cur=P.id;page='bp';kind='bp';enterMain();
+  if(S.view&&S.drive.on)withToken(()=>pull(false),'');   // 點擊當下就要求授權
+  persist();
+}
+function userSheet(){
+  const acts=G.profiles.map(p=>({t:(p===S?'✓ ':'')+p.name+(p.view?'（只看）':''),alt:p!==S,fn:()=>switchTo(p.id)}));
+  acts.push({t:'＋ 新增使用者',alt:1,fn:()=>openSetup(true)});
+  sheet({title:'切換使用者',txt:'每個使用者的紀錄分開存。標「只看」的是從雲端讀取的家人紀錄。',acts});
+}
+$('bWho').onclick=userSheet;$('bUsers').onclick=userSheet;$('bAddUser').onclick=()=>openSetup(true);
+$('cloudLine').onclick=()=>{if(!S.drive.on){go('set');return}S.view?withToken(()=>pull(false),''):withToken(()=>backup(false),'')};
+function go(p){if(S.view&&(p==='bp'||p==='gl'))p='trend';page=p;
   for(const b of document.querySelectorAll('.tabbar button'))b.setAttribute('aria-selected',b.dataset.p===p);
   for(const [id,n] of [['pBp','bp'],['pGl','gl'],['pTrend','trend'],['pHist','hist'],['pSet','set']])$(id).classList.toggle('hide',n!==p);
   if(p==='bp'||p==='gl'){kind=p;syncSeg()}
@@ -511,6 +566,7 @@ function resetTimes(){const n=localISO(new Date());$('tBp').value=n;$('tGl').val
 
 /* ---------- 新增紀錄 ---------- */
 function addRec(r){
+  if(S.view)return;
   r.id=newId();r.c=Date.now();S.recs.push(r);S.drive.dirty=true;
   if(S.drive.on)withToken(()=>backup(true),'');   // 需在按鈕點擊當下呼叫，Google 視窗才不會被擋
   persist();render();
@@ -560,7 +616,8 @@ const inRange=()=>{const from=Date.now()-days*864e5;return sorted().filter(r=>r.
 let C={};
 function cloudLine(){
   const el=$('cloudLine');
-  if(S.drive.on)el.textContent=S.drive.dirty?'☁ 有新紀錄尚未備份':S.drive.last?'☁ 已備份到雲端 '+fmt(S.drive.last):'☁ 已連接雲端';
+  if(S.view)el.textContent='☁ 家人的紀錄，'+(S.drive.last?fmt(S.drive.last)+' 更新':'尚未讀取')+'　↻ 點這裡更新';
+  else if(S.drive.on)el.textContent=S.drive.dirty?'☁ 有新紀錄尚未備份　點這裡備份':S.drive.last?'☁ 已備份到雲端 '+fmt(S.drive.last):'☁ 已連接雲端';
   else el.textContent='資料只存在這支手機';
 }
 function render(){
@@ -603,7 +660,7 @@ function renderHist(){
   const list=S.recs.filter(r=>r.k===kind).sort((a,b)=>b.t-a.t).slice(0,300);
   if(!list.length){$('hist').innerHTML=`<li class="empty">還沒有${kind==='bp'?'血壓':'血糖'}紀錄</li>`;return}
   $('hist').innerHTML=list.map(r=>{const b=r.k==='bp',lv=b?bpLevel(r.s,r.d):glLevel(r.v,r.m);
-    return`<li><div><div class="hv">${b?esc(r.s)+'/'+esc(r.d):esc(r.v)}<span class="tag lv-${lv[0]}">${lv[1]}</span></div><div class="hm">${fmt(r.t)}${b?(r.p?' · 脈搏 '+esc(r.p):''):' · '+esc(MEAL[r.m]||'')}</div></div><button class="small" data-del="${esc(r.id)}" type="button">刪除</button></li>`}).join('');
+    return`<li><div><div class="hv">${b?esc(r.s)+'/'+esc(r.d):esc(r.v)}<span class="tag lv-${lv[0]}">${lv[1]}</span></div><div class="hm">${fmt(r.t)}${b?(r.p?' · 脈搏 '+esc(r.p):''):' · '+esc(MEAL[r.m]||'')}</div></div>${S.view?'':`<button class="small" data-del="${esc(r.id)}" type="button">刪除</button>`}</li>`}).join('');
 }
 $('hist').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(!b)return;
   if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='確定刪除？';b.style.color='var(--bad)';setTimeout(()=>{if(b.isConnected){b.dataset.sure='';b.textContent='刪除';b.style.color=''}},4000);return}
@@ -649,7 +706,8 @@ $('bCsv').onclick=()=>{
 };
 async function restoreFrom(input){
   const f=input.files[0];input.value='';if(!f)return;
-  try{const d=JSON.parse(await f.text());const n=merge(d);S.drive.dirty=true;await persist();
+  try{const d=JSON.parse(await f.text());const n=merge(d);
+    if(!G.profiles.includes(S)){if(!S.name)S.name='我';G.profiles.push(S);G.cur=S.id}S.drive.dirty=true;await persist();
     if($('vMain').dataset.ready==='1'){render();sheet({lab:'還原完成',lv:'ok',txt:`新增了 ${n} 筆紀錄，目前共 ${S.recs.length} 筆。`})}
     else{enterMain();sheet({lab:'還原完成',lv:'ok',txt:`找回 ${S.recs.length} 筆紀錄。`})}}
   catch(e){sheet({lab:'無法還原',lv:'bad',txt:e.message.includes('JSON')?'檔案格式不對，請選擇「血壓血糖手冊備份」開頭的檔案':e.message})}
@@ -657,20 +715,21 @@ async function restoreFrom(input){
 $('fRestore').onchange=e=>restoreFrom(e.target);$('fRestore0').onchange=e=>restoreFrom(e.target);
 
 /* ---------- Google 雲端硬碟 ---------- */
-let tok=null,tokExp=0,tc=null,afterTok=null,syncing=false;
+let tok=null,tokExp=0,tokFor=null,tc=null,afterTok=null,syncing=false,tokReq=null;
 const dmsg=t=>{$('driveMsg').textContent=t||''};
 function loadGis(){if(!GOOGLE_CLIENT_ID||document.getElementById('gis'))return;const s=document.createElement('script');s.id='gis';s.src='https://accounts.google.com/gsi/client';s.async=true;document.head.append(s)}
 function initTC(){
   if(tc)return tc;if(!(window.google&&google.accounts&&google.accounts.oauth2))return null;
   tc=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:'https://www.googleapis.com/auth/drive.file',
-    callback:r=>{const f=afterTok;afterTok=null;if(r.error){dmsg('連接失敗，請再試一次');return}tok=r.access_token;tokExp=Date.now()+((r.expires_in||3600)-120)*1000;f&&f()},
+    callback:r=>{const f=afterTok;afterTok=null;if(r.error){dmsg('連接失敗，請再試一次');return}tok=r.access_token;tokFor=tokReq;tokExp=Date.now()+((r.expires_in||3600)-120)*1000;f&&f()},
     error_callback:e=>{afterTok=null;dmsg(e&&e.type==='popup_closed'?'已取消':'Google 視窗被擋住了，請允許彈出視窗後再試')}});
   return tc;
 }
 function withToken(fn,prompt){
-  if(tok&&Date.now()<tokExp){fn();return}
+  if(tok&&Date.now()<tokExp&&tokFor===S.id){fn();return}
   if(!initTC()){dmsg('Google 元件還在載入，請稍後再試');return}
-  afterTok=fn;tc.requestAccessToken({prompt});
+  if(tok&&tokFor!==S.id&&G.profiles.length>1)prompt='select_account';   // 不同使用者可能用不同 Google 帳號
+  afterTok=fn;tokReq=S.id;tc.requestAccessToken({prompt});
 }
 async function gfetch(url,opt={}){
   const r=await fetch(url,{...opt,headers:{Authorization:'Bearer '+tok,...(opt.headers||{})}});
@@ -690,7 +749,23 @@ async function upload(id,data){
   const mp=`--${B}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${B}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${B}--`;
   return(await(await gfetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+B},body:mp})).json()).id;
 }
+async function pull(mustExist){
+  if(syncing)return null;syncing=true;dmsg('讀取中…');$('cloudLine').textContent='☁ 讀取中…';
+  try{
+    if(!codeOk(S.code))throw new Error('代碼格式不對');
+    const id=await findFile();
+    if(!id)throw new Error(`這個 Google 帳號裡找不到代碼 ${showCode(S.code)} 的備份，請確認代碼，並選家人備份用的帳號`);
+    const d=await(await gfetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?alt=media`)).json();
+    if(!d||d.app!=='bpbook'||!Array.isArray(d.recs))throw new Error('雲端檔案格式不對');
+    const dead=new Set(d.dead||[]);
+    S.recs=d.recs.filter(r=>r&&r.id&&!dead.has(r.id)&&(r.k==='bp'||r.k==='gl')&&+r.t);S.dead=[...dead];
+    S.drive={on:true,fileId:id,last:Date.now(),dirty:false};await persist();render();dmsg('已更新');
+    return{ok:true};
+  }catch(e){dmsg(e.message);cloudLine();if(!mustExist)sheet({lv:'warn',lab:'無法更新',txt:e.message});return{ok:false,err:e.message}}
+  finally{syncing=false}
+}
 async function backup(quiet,mustExist){
+  if(S.view)return pull(mustExist);
   if(syncing)return null;syncing=true;if(!quiet)dmsg('備份中…');
   try{
     if(!codeOk(S.code))throw new Error('請先在「個人設定」設定備份代碼');
@@ -704,12 +779,21 @@ async function backup(quiet,mustExist){
   finally{syncing=false}
 }
 function renderSet(){
+  $('usersInfo').textContent=G.profiles.length>1?`這支手機上有 ${G.profiles.length} 位使用者：${G.profiles.map(p=>p.name+(p.view?'（只看）':'')).join('、')}。目前是「${S.name}」。`:'可以新增家人，例如自己記錄的「我」，和只看雲端紀錄的「媽媽」，各自分開。';
+  $('wipeInfo').textContent=G.profiles.length>1?`刪除「${S.name}」在這支手機上的紀錄和設定，其他使用者不受影響。雲端硬碟裡的備份檔不會被刪。`:'刪除這支手機上的所有紀錄和設定。雲端硬碟裡的備份檔不會被刪。';
+  $('bWipe').textContent=G.profiles.length>1?`刪除使用者「${S.name}」`:'刪除這支手機上的資料';
+  for(const id of['cardShare'])$(id).classList.toggle('hide',S.view);
+  $('bExport').closest('.card').classList.toggle('hide',S.view);
+  $('bCode').closest('.row').classList.toggle('hide',S.view);$('code2').closest('.codeRow').classList.toggle('hide',S.view);
   $('stLocal').textContent=`這支手機上有 ${S.recs.length} 筆紀錄`;$('nick2').value=S.name;$('code2').value=showCode(S.code);
   $('codeHelp').textContent=codeOk(S.code)?`您的備份代碼是 ${showCode(S.code)}，換手機時要輸入。同一個 Google 帳號可以用不同代碼存好幾個人的紀錄。`:'還沒設定備份代碼（4 碼，英文和數字都要有），設定後才能使用 Google 雲端備份。';
-  $('pinState').textContent=S.pin?'已設定四碼鎖：打開 App 時需要輸入。':'尚未設定四碼鎖：任何人拿起這支手機都能看到紀錄。';
-  $('bPinSet').textContent=S.pin?'更改四碼鎖':'設定四碼鎖';$('bPinOff').classList.toggle('hide',!S.pin);
+  $('pinState').textContent=G.pin?'已設定四碼鎖：打開 App 時需要輸入。':'尚未設定四碼鎖：任何人拿起這支手機都能看到紀錄。';
+  $('bPinSet').textContent=G.pin?'更改四碼鎖':'設定四碼鎖';$('bPinOff').classList.toggle('hide',!G.pin);
   const dot=$('stDriveDot'),btns=$('driveBtns');
   if(!GOOGLE_CLIENT_ID){$('stDrive').textContent='尚未開放';dot.className='';$('driveHelp').textContent='這個功能還沒設定完成，請先用下面的「匯出備份檔」。';btns.innerHTML='';return}
+  if(S.view){$('stDrive').textContent=`只看家人的紀錄（代碼 ${showCode(S.code)}）`+(S.drive.last?`，上次更新 ${fmt(S.drive.last)}`:'');dot.className='ok';
+    $('driveHelp').textContent='這個使用者只從雲端讀取家人的紀錄，不會上傳，也不能新增或刪除。';
+    btns.innerHTML='<button class="small" type="button" data-a="pull" style="flex-basis:100%">從雲端更新</button>';return}
   if(S.drive.on){$('stDrive').textContent=S.drive.dirty?'已連接，有新紀錄尚未備份':`已連接，上次備份 ${S.drive.last?fmt(S.drive.last):'—'}`;dot.className=S.drive.dirty?'warn':'ok';
     btns.innerHTML='<button class="small" type="button" data-a="now">立即備份</button><button class="small" type="button" data-a="off">中斷連接</button>'}
   else{$('stDrive').textContent='未連接';dot.className='';btns.innerHTML='<button class="small" type="button" data-a="on" style="flex-basis:100%">連接我的 Google 雲端硬碟</button>'}
@@ -717,6 +801,7 @@ function renderSet(){
 $('driveBtns').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
   if(a==='on'){dmsg('');if(!codeOk(S.code)){dmsg('請先在下方「個人設定」設定 4 碼備份代碼');$('code2').focus();return}withToken(()=>backup(false),'select_account')}
   else if(a==='now')withToken(()=>backup(false),'');
+  else if(a==='pull')withToken(()=>pull(false),'');
   else if(a==='off')sheet({title:'中斷雲端連接？',txt:'之後的紀錄只會存在這支手機。雲端硬碟裡已經備份的檔案不會被刪除。',acts:[{t:'中斷連接',fn:async()=>{
     try{if(tok&&window.google)google.accounts.oauth2.revoke(tok,()=>{})}catch(err){}tok=null;S.drive={on:false,fileId:null,last:0,dirty:false};await persist();render();dmsg('已中斷連接')}},{t:'取消',alt:1}]});
 });
@@ -732,20 +817,25 @@ $('bCode').onclick=()=>{
     acts:[{t:'更改',fn:async()=>{S.code=c;S.drive.fileId=null;S.drive.dirty=true;
       if(S.drive.on)withToken(()=>backup(false),'');await persist();render();sheet({lab:'已更改',lv:'ok',txt:`備份代碼改為 ${showCode(c)}。`})}},{t:'取消',alt:1}]});
 };
-$('bNick').onclick=async()=>{const n=$('nick2').value.trim();if(!n)return;S.name=n.slice(0,12);await persist();$('who').textContent=S.name+'，您好';sheet({lab:'已儲存',lv:'ok',txt:'稱呼已更新。'})};
+$('bNick').onclick=async()=>{const n=$('nick2').value.trim();if(!n)return;S.name=n.slice(0,12);await persist();enterMain();go('set');sheet({lab:'已儲存',lv:'ok',txt:'稱呼已更新。'})};
 $('bPinSet').onclick=()=>{
   const setNew=()=>startPin('new',()=>{show('vMain');go('set')});
-  if(S.pin)startPin('unlock',setNew);else setNew();
-  if(S.pin)$('pinPrompt').textContent='請先輸入目前的四碼';$('bLockCancel').classList.remove('hide');$('bForgot').classList.add('hide');
+  if(G.pin)startPin('unlock',setNew);else setNew();
+  if(G.pin)$('pinPrompt').textContent='請先輸入目前的四碼';$('bLockCancel').classList.remove('hide');$('bForgot').classList.add('hide');
 };
-$('bPinOff').onclick=()=>{startPin('unlock',async()=>{S.pin=null;await persist();show('vMain');go('set');sheet({lab:'已取消四碼鎖',lv:'ok',txt:'打開 App 時不再需要輸入驗證碼。'})});
+$('bPinOff').onclick=()=>{startPin('unlock',async()=>{G.pin=null;await persist();show('vMain');go('set');sheet({lab:'已取消四碼鎖',lv:'ok',txt:'打開 App 時不再需要輸入驗證碼。'})});
   $('pinPrompt').textContent='請輸入目前的四碼';$('bLockCancel').classList.remove('hide');$('bForgot').classList.add('hide')};
 async function wipe(){
   try{const db=await idb();await new Promise(r=>{const t=db.transaction('kv','readwrite');t.objectStore('kv').clear();t.oncomplete=r;t.onerror=r})}catch(e){}
   try{localStorage.removeItem('bpbook-state');localStorage.removeItem('bpbook')}catch(e){}
-  S={name:'',code:'',pin:null,recs:[],dead:[],drive:{on:false,fileId:null,last:0,dirty:false}};tok=null;$('vMain').dataset.ready='';$('nick').value='';$('code').value='';show('vSetup');
+  G={v:2,pin:null,cur:null,profiles:[]};S=newProfile('','',false);tok=null;$('vMain').dataset.ready='';openSetup(false);
 }
-$('bWipe').onclick=()=>sheet({title:'刪除這支手機上的資料？',txt:`將刪除 ${S.recs.length} 筆紀錄和所有設定，無法復原。建議先匯出備份檔。`,acts:[{t:'先匯出備份檔',fn:()=>$('bExport').click()},{t:'確定刪除',danger:1,fn:wipe},{t:'取消',alt:1}]});
+async function removeProfile(){
+  G.profiles=G.profiles.filter(p=>p!==S);S=G.profiles[0];G.cur=S.id;tok=null;await persist();page='bp';enterMain();
+  sheet({lab:'已刪除',lv:'ok',txt:`已切換到「${S.name}」。`});
+}
+$('bWipe').onclick=()=>G.profiles.length>1?sheet({title:`刪除使用者「${S.name}」？`,txt:S.view?'只會刪除這支手機上讀到的紀錄，家人自己的紀錄和雲端備份都不受影響。':`將刪除「${S.name}」在這支手機上的 ${S.recs.length} 筆紀錄，無法復原。建議先匯出備份檔。雲端硬碟裡的備份檔不會被刪。`,
+  acts:[...(S.view?[]:[{t:'先匯出備份檔',fn:()=>$('bExport').click()}]),{t:'確定刪除',danger:1,fn:removeProfile},{t:'取消',alt:1}]}):sheet({title:'刪除這支手機上的資料？',txt:`將刪除 ${S.recs.length} 筆紀錄和所有設定，無法復原。建議先匯出備份檔。`,acts:[{t:'先匯出備份檔',fn:()=>$('bExport').click()},{t:'確定刪除',danger:1,fn:wipe},{t:'取消',alt:1}]});
 
 /* ---------- 加到主畫面 ---------- */
 const UA=navigator.userAgent;
@@ -796,9 +886,13 @@ try{localStorage.removeItem('bpbook')}catch(e){}   // 舊版雲端登入的憑�
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 (async()=>{
   const v=await loadState();
-  if(v){S={...S,...v,drive:{...S.drive,...(v.drive||{})}};S.recs=Array.isArray(S.recs)?S.recs:[];S.dead=Array.isArray(S.dead)?S.dead:[]}
-  if(!S.name){show('vSetup');return}
-  if(S.pin)startPin('unlock',enterMain);else enterMain();
+  if(v&&Array.isArray(v.profiles))G={v:2,pin:v.pin||null,cur:v.cur,profiles:v.profiles};
+  else if(v&&v.name){const P=newProfile(v.name,v.code||'',false);P.recs=Array.isArray(v.recs)?v.recs:[];P.dead=Array.isArray(v.dead)?v.dead:[];P.drive={...blankDrive(),...(v.drive||{})};
+    G={v:2,pin:v.pin||null,cur:P.id,profiles:[P]};await persist()}   // 舊版單一使用者 → 轉成第一位使用者
+  for(const p of G.profiles){p.recs=Array.isArray(p.recs)?p.recs:[];p.dead=Array.isArray(p.dead)?p.dead:[];p.drive={...blankDrive(),...(p.drive||{})}}
+  if(!G.profiles.length){openSetup(false);return}
+  S=G.profiles.find(p=>p.id===G.cur)||G.profiles[0];G.cur=S.id;
+  if(G.pin)startPin('unlock',enterMain);else enterMain();
 })();
 }
 </script>
