@@ -269,6 +269,12 @@ input.txt{font:inherit;font-size:24px;width:100%;padding:12px 14px;border:2px so
         </div>
       </div></div>
     </div>
+    <div class="card" id="cardShare">
+      <h3>分享給家人朋友</h3>
+      <p>傳安裝頁給別人，對方照著步驟就能裝。安裝頁有 QR Code，也可以印出來。每個人的紀錄都只存在自己的手機，不會互相看到。</p>
+      <div class="row"><button class="small" id="bShareApp" type="button">分享安裝頁</button><a class="small" href="install.html" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--ink);flex:1 1 140px;min-height:52px">看安裝頁</a></div>
+      <div class="msg" id="shareMsg" role="status" style="color:var(--ok)"></div>
+    </div>
     <div class="card" id="cardDrive">
       <h3>Google 雲端硬碟備份</h3>
       <p class="status"><i id="stDriveDot"></i><span id="stDrive"></span></p>
@@ -750,6 +756,12 @@ function renderHome(){
 $('bSetupHow').onclick=()=>{$('setupHow').classList.toggle('hide')};
 setupHow();renderHome();
 if(isIOS&&!standalone())$('setupHome').classList.remove('hide');
+
+$('bShareApp').onclick=async()=>{
+  const url='https://pinlie325.github.io/bp-log/install.html',text='給長輩用的血壓血糖紀錄，免費，紀錄只存在自己的手機。打開連結照著步驟加到主畫面就能用：';
+  try{if(navigator.share){await navigator.share({title:'血壓血糖手冊',text,url});return}}catch(e){if(e&&e.name==='AbortError')return}
+  copyText(text+url,$('shareMsg'));
+};
 
 /* ---------- 啟動 ---------- */
 drawBp();drawGl();loadGis();
