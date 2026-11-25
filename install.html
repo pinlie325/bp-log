@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#b3261e">
 <title>安裝血壓血糖手冊</title>
 <script>try{var t=localStorage.getItem("bpbook-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
-<meta name="description" content="給長輩用的血壓血糖紀錄 App：大字、數字鍵、趨勢圖，紀錄只存在自己的手機。免費，加到手機主畫面就能用。">
+<meta name="description" content="全家都能用的血壓血糖紀錄 App：大字、數字鍵、趨勢圖，長輩也容易上手，紀錄只存在自己的手機。免費，加到手機主畫面就能用。">
 <meta property="og:title" content="血壓血糖手冊｜免費安裝">
 <meta property="og:description" content="大字好按的血壓血糖紀錄，紀錄只存在自己的手機。掃 QR Code 或點連結，加到主畫面就能用。">
 <meta property="og:image" content="https://pinlie325.github.io/bp-log/icon-512.png">
@@ -97,7 +97,7 @@ footer{text-align:center;color:var(--mute);font-size:15px;margin-top:24px}
 <body>
 <header class="hero"><button class="themeBtn noprint" type="button" id="bTheme" aria-label="切換畫面顏色"></button><div class="in">
   <img src="icon-512.png" alt="血壓血糖手冊圖示" width="112" height="112">
-  <div><h1>血壓血糖手冊</h1><p>給長輩用的血壓、血糖紀錄。大字好按，免費，加到手機主畫面就能用。</p></div>
+  <div><h1>血壓血糖手冊</h1><p>全家都能用的血壓、血糖紀錄。大字好按，長輩也容易上手；免費，加到手機主畫面就能用。</p></div>
 </div></header>
 
 <main>
@@ -189,7 +189,7 @@ let evt=null;
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();evt=e;$('bInstall').hidden=false});
 $('bInstall').onclick=async()=>{if(!evt)return;evt.prompt();try{await evt.userChoice}catch(e){}evt=null;$('bInstall').hidden=true};
 $('bShare').onclick=async()=>{
-  const data={title:'血壓血糖手冊',text:'給長輩用的血壓血糖紀錄，免費，紀錄只存在自己的手機。打開連結照著步驟加到主畫面就能用：',url:PAGE};
+  const data={title:'血壓血糖手冊',text:'全家都能用的血壓血糖紀錄，字大好按，免費，紀錄只存在自己的手機。打開連結照著步驟加到主畫面就能用：',url:PAGE};
   try{if(navigator.share){await navigator.share(data);return}}catch(e){if(e&&e.name==='AbortError')return}
   try{await navigator.clipboard.writeText(data.text+PAGE);$('shareMsg').textContent='已複製連結，可以貼到 LINE'}
   catch(e){$('shareMsg').textContent='請複製這個網址分享：'+PAGE}

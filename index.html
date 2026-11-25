@@ -147,7 +147,7 @@ input.txt{font:inherit;font-size:24px;width:100%;padding:12px 14px;border:2px so
   <p class="sub" id="setupSub">每天量一下，記下來，看診時好跟醫師說。紀錄只存在這支手機裡。</p>
   <label class="chk hide" id="viewWrap"><input type="checkbox" id="viewOnly"><span><b>只看家人的紀錄</b><br><span style="font-size:15px;color:var(--mute)">從 Google 雲端讀取家人（例如媽媽）的紀錄，只能看趨勢和歷史，不能新增或修改。需要家人的備份代碼，並連到她備份用的 Google 帳號。</span></span></label>
   <label class="t" for="nick">怎麼稱呼您</label>
-  <input class="txt" id="nick" maxlength="12" placeholder="例如 王奶奶">
+  <input class="txt" id="nick" maxlength="12" placeholder="例如 姊姊、小明">
   <label class="t" for="code">備份代碼</label>
   <div class="codeRow"><input class="txt" id="code" maxlength="4" placeholder="K7P3" autocapitalize="characters" autocomplete="off" spellcheck="false"><button type="button" id="bRand">隨機產生</button></div>
   <p class="note" style="margin-top:6px">4 碼，英文和數字都要有。雲端備份用代碼區分，請記下來，換手機時輸入同一組代碼就能找回。稱呼之後可以隨時改。</p>
@@ -484,7 +484,7 @@ function setupMode(){
   $('bStart').classList.toggle('hide',view);$('bRand').classList.toggle('hide',view);
   $('bRecover').textContent=view?'連接 Google，讀取家人的紀錄':addMode?'從 Google 雲端找回這個人的紀錄':'換手機？從 Google 雲端找回紀錄';
   $('bRecover').style.cssText=view?'':'background:var(--key);color:var(--ink);font-size:20px';
-  $('nick').placeholder=view?'例如 媽媽':'例如 王奶奶';$('code').placeholder=view?'家人的代碼':'K7P3';
+  $('nick').placeholder=view?'例如 媽媽':'例如 姊姊、小明';$('code').placeholder=view?'家人的代碼':'K7P3';
 }
 $('viewOnly').onchange=setupMode;
 $('bAddCancel').onclick=()=>{addMode=false;S=G.profiles.find(p=>p.id===G.cur)||G.profiles[0];enterMain()};
@@ -860,7 +860,7 @@ setupHow();renderHome();
 if(isIOS&&!standalone())$('setupHome').classList.remove('hide');
 
 $('bShareApp').onclick=async()=>{
-  const url='https://pinlie325.github.io/bp-log/install.html',text='給長輩用的血壓血糖紀錄，免費，紀錄只存在自己的手機。打開連結照著步驟加到主畫面就能用：';
+  const url='https://pinlie325.github.io/bp-log/install.html',text='全家都能用的血壓血糖紀錄，字大好按，免費，紀錄只存在自己的手機。打開連結照著步驟加到主畫面就能用：';
   try{if(navigator.share){await navigator.share({title:'血壓血糖手冊',text,url});return}}catch(e){if(e&&e.name==='AbortError')return}
   copyText(text+url,$('shareMsg'));
 };
