@@ -120,6 +120,10 @@ input.txt{font:inherit;font-size:24px;width:100%;padding:12px 14px;border:2px so
 .sheet .acts{display:grid;gap:8px;margin-top:14px}.sheet .acts .btn{margin:0}
 .sheet .acts .alt{background:var(--key);color:var(--ink)}
 .sheet h3{font-size:24px;margin:0 0 6px}
+.how ol{margin:6px 0 0;padding-left:1.4em}.how li{margin:8px 0;font-size:17px;line-height:1.55;color:var(--ink)}
+.how b{white-space:nowrap}.how h4{margin:12px 0 0;font-size:17px}
+.ico{display:inline-block;vertical-align:-4px;width:22px;height:22px;border:1.5px solid var(--line);border-radius:6px;padding:1px;background:var(--key)}
+.warnbox{margin-top:10px;padding:10px 12px;border-radius:12px;background:light-dark(#fdf0dc,#3a2c12);color:var(--warn);font-size:15px;font-weight:500}
 .codeRow{display:flex;gap:8px}.codeRow input{flex:1;text-transform:uppercase;letter-spacing:.3em;font-weight:700;text-align:center}
 .codeRow button{flex:none;min-height:60px;padding:0 16px;border-radius:14px;background:var(--key);font-size:17px;font-weight:700}
 </style>
@@ -140,6 +144,28 @@ input.txt{font:inherit;font-size:24px;width:100%;padding:12px 14px;border:2px so
   <button class="btn" id="bStart" type="button">開始使用</button>
   <button class="btn hide" id="bRecover" type="button" style="background:var(--key);color:var(--ink);font-size:20px">換手機？從 Google 雲端找回紀錄</button>
   <div class="msg err" id="setupMsg" role="status"></div>
+  <div class="warnbox hide" id="setupHome">用 iPhone 嗎？建議<b>先加到主畫面</b>，再從主畫面圖示打開開始記錄，紀錄才不會分散在兩個地方。<button class="link" id="bSetupHow" type="button" style="font-size:15px;min-height:36px">看教學</button>
+    <div id="setupHow" class="hide"><div class="how">
+        <div class="hIos">
+          <h4>iPhone（用 Safari）</h4>
+          <ol>
+            <li class="hLine">如果是從 LINE 點開的，先點右上角選單，選<b>「用預設瀏覽器開啟」</b>，換到 Safari。</li>
+            <li>點畫面右下角的<b>「⋯」</b>，再點<b>「分享」</b> <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11v9h12v-9"/></svg>。<br><span style="color:var(--mute);font-size:15px">舊版 iOS：直接點畫面下方中間的分享按鈕。</span></li>
+            <li>往下滑，點<b>「加入主畫面」</b>。</li>
+            <li>確認<b>「打開為網頁 App」</b>是開著的，再按右上角<b>「新增」</b>。</li>
+            <li>回到主畫面，點紅色愛心圖示<b>「血壓血糖」</b>打開。</li>
+          </ol>
+          <div class="warnbox">iPhone 的主畫面 App 和 Safari 裡的紀錄是<b>分開存</b>的。如果已經在 Safari 記過資料，請先在 Safari 的「設定」匯出備份檔或連接 Google 雲端，再到主畫面 App 裡還原。之後都從主畫面圖示打開就好。</div>
+        </div>
+        <div class="hAnd">
+          <h4>Android（用 Chrome）</h4>
+          <ol>
+            <li>點右上角的<b>「⋮」</b>。</li>
+            <li>點<b>「加到主畫面」</b>或<b>「安裝應用程式」</b>，再按<b>「安裝」</b>。</li>
+            <li>回到主畫面，點<b>「血壓血糖」</b>圖示打開。</li>
+          </ol>
+        </div>
+      </div></div></div>
   <p class="note">已經有備份檔？<label class="link" for="fRestore0" style="cursor:pointer">從備份檔還原</label>
   <input type="file" id="fRestore0" accept=".json,application/json" class="hide"></p>
 </section>
@@ -215,6 +241,33 @@ input.txt{font:inherit;font-size:24px;width:100%;padding:12px 14px;border:2px so
       <h3>資料存在哪裡</h3>
       <p class="status"><i class="ok"></i><span id="stLocal"></span></p>
       <p>紀錄只存在這支手機的瀏覽器裡，不會上傳到任何人的伺服器。</p>
+    </div>
+    <div class="card" id="cardHome">
+      <h3>加到手機主畫面</h3>
+      <p class="status"><i id="stHomeDot"></i><span id="stHome"></span></p>
+      <p>加到主畫面後，像一般 App 一樣點圖示就能打開，畫面更大、不會有網址列，iPhone 也比較不會清掉資料。</p>
+      <button class="btn hide" id="bInstall" type="button" style="font-size:20px">安裝到主畫面</button>
+      <div id="homeHow"><div class="how">
+        <div class="hIos">
+          <h4>iPhone（用 Safari）</h4>
+          <ol>
+            <li class="hLine">如果是從 LINE 點開的，先點右上角選單，選<b>「用預設瀏覽器開啟」</b>，換到 Safari。</li>
+            <li>點畫面右下角的<b>「⋯」</b>，再點<b>「分享」</b> <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11v9h12v-9"/></svg>。<br><span style="color:var(--mute);font-size:15px">舊版 iOS：直接點畫面下方中間的分享按鈕。</span></li>
+            <li>往下滑，點<b>「加入主畫面」</b>。</li>
+            <li>確認<b>「打開為網頁 App」</b>是開著的，再按右上角<b>「新增」</b>。</li>
+            <li>回到主畫面，點紅色愛心圖示<b>「血壓血糖」</b>打開。</li>
+          </ol>
+          <div class="warnbox">iPhone 的主畫面 App 和 Safari 裡的紀錄是<b>分開存</b>的。如果已經在 Safari 記過資料，請先在 Safari 的「設定」匯出備份檔或連接 Google 雲端，再到主畫面 App 裡還原。之後都從主畫面圖示打開就好。</div>
+        </div>
+        <div class="hAnd">
+          <h4>Android（用 Chrome）</h4>
+          <ol>
+            <li>點右上角的<b>「⋮」</b>。</li>
+            <li>點<b>「加到主畫面」</b>或<b>「安裝應用程式」</b>，再按<b>「安裝」</b>。</li>
+            <li>回到主畫面，點<b>「血壓血糖」</b>圖示打開。</li>
+          </ol>
+        </div>
+      </div></div>
     </div>
     <div class="card" id="cardDrive">
       <h3>Google 雲端硬碟備份</h3>
@@ -675,6 +728,28 @@ async function wipe(){
   S={name:'',code:'',pin:null,recs:[],dead:[],drive:{on:false,fileId:null,last:0,dirty:false}};tok=null;$('vMain').dataset.ready='';$('nick').value='';$('code').value='';show('vSetup');
 }
 $('bWipe').onclick=()=>sheet({title:'刪除這支手機上的資料？',txt:`將刪除 ${S.recs.length} 筆紀錄和所有設定，無法復原。建議先匯出備份檔。`,acts:[{t:'先匯出備份檔',fn:()=>$('bExport').click()},{t:'確定刪除',danger:1,fn:wipe},{t:'取消',alt:1}]});
+
+/* ---------- 加到主畫面 ---------- */
+const UA=navigator.userAgent;
+const isIOS=/iPhone|iPad|iPod/.test(UA)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const isAndroid=/Android/.test(UA);
+const inLine=/\bLine\//i.test(UA);
+const standalone=()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}};
+let installEvt=null;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;$('bInstall').classList.remove('hide')});
+addEventListener('appinstalled',()=>{installEvt=null;$('bInstall').classList.add('hide');renderHome()});
+$('bInstall').onclick=async()=>{if(!installEvt)return;installEvt.prompt();try{await installEvt.userChoice}catch(e){}installEvt=null;$('bInstall').classList.add('hide')};
+function setupHow(){for(const box of document.querySelectorAll('.how')){
+  box.querySelector('.hIos').classList.toggle('hide',isAndroid);box.querySelector('.hAnd').classList.toggle('hide',isIOS);
+  box.querySelectorAll('.hLine').forEach(li=>li.classList.toggle('hide',!inLine))}}
+function renderHome(){
+  const on=standalone();$('stHomeDot').className=on?'ok':'';
+  $('stHome').textContent=on?'已經從主畫面打開，不用再設定':(isIOS?'目前是用瀏覽器打開':isAndroid?'目前是用瀏覽器打開':'在電腦上看的，請用手機打開這個網址');
+  $('homeHow').classList.toggle('hide',on);
+}
+$('bSetupHow').onclick=()=>{$('setupHow').classList.toggle('hide')};
+setupHow();renderHome();
+if(isIOS&&!standalone())$('setupHome').classList.remove('hide');
 
 /* ---------- 啟動 ---------- */
 drawBp();drawGl();loadGis();
