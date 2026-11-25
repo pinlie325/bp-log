@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#b3261e">
 <title>安裝血壓血糖手冊</title>
+<script>try{var t=localStorage.getItem("bpbook-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <meta name="description" content="給長輩用的血壓血糖紀錄 App：大字、數字鍵、趨勢圖，紀錄只存在自己的手機。免費，加到手機主畫面就能用。">
 <meta property="og:title" content="血壓血糖手冊｜免費安裝">
 <meta property="og:description" content="大字好按的血壓血糖紀錄，紀錄只存在自己的手機。掃 QR Code 或點連結，加到主畫面就能用。">
@@ -22,7 +23,11 @@
 --bg:light-dark(#f6f4ef,#121418);--card:light-dark(#fff,#1c1f25);--ink:light-dark(#1b1d21,#eef0f3);
 --mute:light-dark(#62666e,#a4aab4);--line:light-dark(#e2ded5,#2f333b);--key:light-dark(#efece5,#262a31);
 --bp:light-dark(#b3261e,#ff8a7f);--gl:light-dark(#1f4fa8,#8fb3ff);--warn:light-dark(#9a5a00,#ffc46b);--on:light-dark(#fff,#15161a)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
+.themeBtn{position:absolute;top:max(14px,env(safe-area-inset-top));right:max(4vw,14px);min-height:44px;padding:0 14px;border-radius:999px;border:1.5px solid rgb(255 255 255/.55);background:rgb(0 0 0/.15);color:#fff;font:700 15px "Noto Sans TC",system-ui,sans-serif;cursor:pointer}
+.themeBtn:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.hero{position:relative}
 body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.6 "Noto Sans TC",system-ui,sans-serif;overflow-x:clip}
 .hero{background:linear-gradient(180deg,#c22f25,#9c1f18);color:#fff;padding:clamp(28px,6vw,56px) max(5vw,18px) clamp(70px,10vw,96px)}
 .hero .in{max-width:880px;margin:0 auto;display:flex;gap:20px;align-items:center}
@@ -66,6 +71,7 @@ footer{text-align:center;color:var(--mute);font-size:15px;margin-top:24px}
   .steps,.feat{grid-template-columns:minmax(0,1fr)}
   .btn{width:100%}.btn.alt{margin:10px 0 0}
   .hero .in{gap:14px}
+  .hero{padding-top:68px}
 }
 @media print{
   body{background:#fff;font-size:15px}
@@ -89,7 +95,7 @@ footer{text-align:center;color:var(--mute);font-size:15px;margin-top:24px}
 </style>
 </head>
 <body>
-<header class="hero"><div class="in">
+<header class="hero"><button class="themeBtn noprint" type="button" id="bTheme" aria-label="切換畫面顏色"></button><div class="in">
   <img src="icon-512.png" alt="血壓血糖手冊圖示" width="112" height="112">
   <div><h1>血壓血糖手冊</h1><p>給長輩用的血壓、血糖紀錄。大字好按，免費，加到手機主畫面就能用。</p></div>
 </div></header>
@@ -159,6 +165,18 @@ const UA=navigator.userAgent;
 const isIOS=/iPhone|iPad|iPod/.test(UA)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const isAndroid=/Android/.test(UA);
 const PAGE='https://pinlie325.github.io/bp-log/install.html';
+const THEMES={auto:'自動',light:'淺色',dark:'深色'};
+function getTheme(){try{const t=localStorage.getItem('bpbook-theme');return t==='light'||t==='dark'?t:'auto'}catch(e){return'auto'}}
+function applyTheme(t){
+  if(t==='auto')delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=t;
+  try{t==='auto'?localStorage.removeItem('bpbook-theme'):localStorage.setItem('bpbook-theme',t)}catch(e){}
+  const dark=t==='dark'||(t==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);
+  const m=document.querySelector('meta[name=theme-color]');if(m)m.content=dark?'#121418':'#b3261e';
+}
+const ORDER=['auto','light','dark'];
+function drawTheme(){$('bTheme').textContent='顏色：'+THEMES[getTheme()]}
+$('bTheme').onclick=()=>{const t=ORDER[(ORDER.indexOf(getTheme())+1)%3];applyTheme(t);drawTheme()};
+applyTheme(getTheme());drawTheme();
 if(isIOS||isAndroid){
   $('getTitle').textContent='已經在手機上了';
   $('getSub').textContent='直接點下面的按鈕打開，再照著下面的步驟加到主畫面。要分享給別人，可以讓對方掃 QR Code。';
